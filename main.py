@@ -8,10 +8,11 @@ with open('option_translation.json', 'r', encoding='utf-8') as f:
 # 페이지 설정
 st.set_page_config(page_title="Midjourney Prompt Generator", layout="wide")
 
-# 제목 설정
-st.title("Midjourney 프롬프트 생성기 - 인물 사진")
+# 세션 상태 초기화
+if 'step' not in st.session_state:
+    st.session_state.step = 0
 
-# 프롬프트 생성 함수
+# 프롬프트 생성 함수 (기존 코드 유지)
 def generate_customizable_prompt(user_inputs):
     person_count = user_inputs['인물 수']
     age = user_inputs.get('나이', '')
@@ -123,63 +124,51 @@ def generate_customizable_prompt(user_inputs):
 
     return prompt.strip()
 
-# UI 구성
+# 단계별 UI 구성
 st.sidebar.header("옵션 선택")
 
 user_inputs = {}
-english_inputs = {}
 
-# 인물 수 선택 (슬라이더)
-user_inputs["인물 수"] = st.sidebar.slider("인물 수", 1, 20, 1, help="Select the number of persons in the image")
+steps = [
+    {"name": "주인공 특징", "options": ["인물 수", "나이", "성별", "인종"]},
+    {"name": "보조 인물 특징", "options": ["보조 인물 수", "보조 인물 나이", "보조 인물 성별"]},
+    {"name": "장면 설정", "options": ["배경", "시간", "날씨", "조명"]},
+    {"name": "구도 및 카메라 설정", "options": ["앵글", "샷 크기", "초점", "렌즈"]},
+    {"name": "스타일 및 후처리", "options": ["스타일", "색감", "후처리 효과"]},
+    {"name": "기술적 설정", "options": ["이미지 비율", "모델"]}
+]
 
-# 나이 선택 (슬라이더)
-user_inputs['나이'] = st.sidebar.slider("나이", 0, 100, 25, help="Select the age of the main character")
+st.sidebar.write(f"Step {st.session_state.step + 1}: {steps[st.session_state.step]['name']}")
 
-# 각 옵션에 대한 선택 위젯 생성
-for category, subcategories in option_translation.items():
-    if category not in ["인물 수", "나이"]:
-        st.sidebar.subheader(category)
-        if isinstance(subcategories, dict) and not any(isinstance(v, dict) for v in subcategories.values()):
-            # 단일 선택 옵션의 경우
-            col1, col2 = st.sidebar.columns([1, 1])
-            with col1:
-                selected = st.selectbox(f"Select {category}", [""] + list(subcategories.keys()), key=f"select_{category}")
-            with col2:
-                custom_input = st.text_input(f"직접 입력 ({category})", key=f"custom_{category}")
-            
-            if custom_input:
-                user_inputs[category] = custom_input
-                english_inputs[category] = custom_input  # 직접 입력의 경우 그대로 사용
-            elif selected:
-                user_inputs[category] = selected
-                english_inputs[category] = subcategories[selected]
+for option in steps[st.session_state.step]['options']:
+    if option in option_translation:
+        selected = st.sidebar.selectbox(f"Select {option}", [""] + list(option_translation[option].keys()))
+        if selected:
+            user_inputs[option] = selected
+    else:
+        for category, subcategories in option_translation.items():
+            if option in subcategories:
+                selected = st.sidebar.selectbox(f"Select {option}", [""] + list(subcategories[option].keys()))
+                if selected:
+                    if category not in user_inputs:
+                        user_inputs[category] = {}
+                    user_inputs[category][option] = selected
+                break
 
-        elif isinstance(subcategories, dict):
-            # 다중 선택 옵션의 경우
-            user_inputs[category] = {}
-            english_inputs[category] = {}
-            for subcategory, choices in subcategories.items():
-                # 인물 수에 따라 옵션 표시
-                if category == "보조 인물 특징" and user_inputs["인물 수"] == 1:
-                    continue
-                if category == "인물 배치 및 포즈" and subcategory == "보조 인물 배치" and user_inputs["인물 수"] == 1:
-                    continue
-                
-                col1, col2 = st.sidebar.columns([1, 1])
-                with col1:
-                    selected = st.selectbox(f"Select {subcategory}", [""] + list(choices.keys()), key=f"select_{category}_{subcategory}")
-                with col2:
-                    custom_input = st.text_input(f"직접 입력 ({subcategory})", key=f"custom_{category}_{subcategory}")
-                
-                if custom_input:
-                    user_inputs[category][subcategory] = custom_input
-                    english_inputs[category][subcategory] = custom_input  # 직접 입력의 경우 그대로 사용
-                elif selected:
-                    user_inputs[category][subcategory] = selected
-                    english_inputs[category][subcategory] = choices[selected]
+col1, col2, col3 = st.sidebar.columns(3)
+
+with col1:
+    if st.button("이전") and st.session_state.step > 0:
+        st.session_state.step -= 1
+        st.experimental_rerun()
+
+with col3:
+    if st.button("다음") and st.session_state.step < len(steps) - 1:
+        st.session_state.step += 1
+        st.experimental_rerun()
 
 # 프롬프트 생성 버튼
-if st.sidebar.button("프롬프트 생성", key="generate_prompt_button"):
+if st.sidebar.button("프롬프트 생성"):
     prompt = generate_customizable_prompt(user_inputs)
     st.session_state.generated_prompt = prompt
     st.session_state.history = st.session_state.get('history', []) + [prompt]
@@ -190,7 +179,7 @@ if 'generated_prompt' in st.session_state:
     st.code(st.session_state.generated_prompt, language="markdown")
     
     # 프롬프트 복사 버튼
-    if st.button("프롬프트 복사", key="copy_prompt_button"):
+    if st.button("프롬프트 복사"):
         st.write("프롬프트가 클립보드에 복사되었습니다!")
         st.markdown(f"<textarea style='position:absolute;left:-9999px'>{st.session_state.generated_prompt}</textarea>", unsafe_allow_html=True)
         st.markdown(f"<script>navigator.clipboard.writeText('{st.session_state.generated_prompt}')</script>", unsafe_allow_html=True)
