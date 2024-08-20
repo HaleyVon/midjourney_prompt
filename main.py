@@ -141,7 +141,7 @@ for category, subcategories in option_translation.items():
         st.sidebar.subheader(category)
         if isinstance(subcategories, dict) and not any(isinstance(v, dict) for v in subcategories.values()):
             # 단일 선택 옵션의 경우
-            col1, col2 = st.sidebar.columns([3, 1])
+            col1, col2 = st.sidebar.columns([1, 1])
             with col1:
                 selected = st.selectbox(f"Select {category}", [""] + list(subcategories.keys()), key=f"select_{category}")
             with col2:
@@ -165,7 +165,7 @@ for category, subcategories in option_translation.items():
                 if category == "인물 배치 및 포즈" and subcategory == "보조 인물 배치" and user_inputs["인물 수"] == 1:
                     continue
                 
-                col1, col2 = st.sidebar.columns([3, 1])
+                col1, col2 = st.sidebar.columns([1, 1])
                 with col1:
                     selected = st.selectbox(f"Select {subcategory}", [""] + list(choices.keys()), key=f"select_{category}_{subcategory}")
                 with col2:
