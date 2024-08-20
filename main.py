@@ -160,12 +160,12 @@ col1, col2, col3 = st.sidebar.columns(3)
 with col1:
     if st.button("이전") and st.session_state.step > 0:
         st.session_state.step -= 1
-        st.experimental_rerun()
+        st.rerun()
 
 with col3:
     if st.button("다음") and st.session_state.step < len(steps) - 1:
         st.session_state.step += 1
-        st.experimental_rerun()
+        st.rerun()
 
 # 프롬프트 생성 버튼
 if st.sidebar.button("프롬프트 생성"):
