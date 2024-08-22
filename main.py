@@ -20,7 +20,7 @@ def generate_customizable_prompt(user_inputs):
     if person_count == 1:
         gender = option_translation['주인공 특징']['성별'].get(user_inputs.get('주인공 특징', {}).get('성별', ''), '')
         ethnicity = option_translation['주인공 특징']['인종'].get(user_inputs.get('주인공 특징', {}).get('인종', ''), '')
-        prompt = f"A fashion-style photograph of a {age}-years-old {gender} {ethnicity}"
+        prompt = f"A fashion-style photograph of a {age}-years-old {ethnicity} {gender}."
 
         main_char_features = [option_translation['주인공 특징'][feature].get(value, value) 
                               for feature, value in user_inputs.get('주인공 특징', {}).items() 
