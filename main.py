@@ -243,23 +243,3 @@ for example in example_prompts:
         st.write(f"`{example}`")
 
 
-
-st.title("Popover 예제: 라디오 버튼과 이미지")
-
-with st.popover("옵션 선택"):
-    selected_option = st.radio(
-        "좋아하는 과일을 선택하세요:",
-        ("사과", "바나나", "체리"),
-        captions = ("빨간 과일", "노란 과일", "작고 둥근 과일")
-    )
-    
-    if selected_option == "사과":
-        st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/640px-Red_Apple.jpg", caption="사과", width=200)
-    elif selected_option == "바나나":
-        st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Bananas_white_background_DS.jpg/640px-Bananas_white_background_DS.jpg", caption="바나나", width=200)
-    elif selected_option == "체리":
-        st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Cherry_Stella444.jpg/640px-Cherry_Stella444.jpg", caption="체리", width=200)
-
-    st.write(f"당신은 {selected_option}를 선택했습니다.")
-
-st.write("팝오버 밖의 내용입니다.")
